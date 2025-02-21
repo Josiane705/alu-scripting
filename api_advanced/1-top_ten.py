@@ -1,50 +1,28 @@
 #!/usr/bin/python3
-"""
-Module to fetch and display the top ten hot posts from a given subreddit using the Reddit API.
-
-This module contains a function `top_ten` that retrieves and prints the titles
-of the first 10 hot posts for a given subreddit using Reddit's public API.
-
-Usage:
-    Run the script with a subreddit name as an argument:
-    $ python3 script.py subreddit_name
-
-If the subreddit is invalid or not found, the function will print `None`.
-"""
-
+"""Script that fetches 10 hot posts for a given subreddit."""
 import requests
-import sys
+
 
 def top_ten(subreddit):
     """
-    Queries the Reddit API and prints the titles of the first 10 hot posts
-    for a given subreddit.
-    
-    Args:
-        subreddit (str): The name of the subreddit to query.
-    
-    Returns:
-        None
+    Print the titles of the top 10 hot posts for a given subreddit.
+
+    If the subreddit is invalid or has no posts, print None.
     """
-    url = f"https://www.reddit.com/r/{subreddit}/hot.json"
-    headers = {'User-Agent': 'Mozilla/5.0'}
-    params = {'limit': 10}
-    
-    response = requests.get(url, headers=headers, params=params, allow_redirects=False)
-    
+    headers = {'User-Agent': 'MyRedditBot/1.0 (by /u/yourusername)'}
+    subreddit_url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
+    params = {'limit': 10}  # Ensure we only get 10 posts
+    response = requests.get(subreddit_url, headers=headers, params=params, allow_redirects=False)
+
     if response.status_code == 200:
-        data = response.json()
-        posts = data.get("data", {}).get("children", [])
-        if posts:
-            for post in posts:
-                print(post["data"].get("title"))
-        else:
+        json_data = response.json()
+        posts = json_data.get('data', {}).get('children', [])
+
+        if not posts:
             print(None)
+            return
+
+        for post in posts:
+            print(post.get('data', {}).get('title', ''))
     else:
         print(None)
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Please pass an argument for the subreddit to search.")
-    else:
-        top_ten(sys.argv[1])
